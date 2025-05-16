@@ -1,7 +1,7 @@
 //  Require express for this is going to be a express js server
 const express = require("express");
 //  Copy this from mongodb atlas - cluster - connect
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 //  Use the variables declared inside the .env file by requiring dotenv package
 require("dotenv").config();
 //  Create a express server
@@ -34,9 +34,24 @@ async function run() {
         await client.connect();
         const coffeeCollection = client.db("coffeeDB").collection("coffees");
 
+        // GET Coffee API
+        app.get("/coffee", async (req, res) => {
+            const cursor = coffeeCollection.find();
+            const allCoffees = await cursor.toArray();
+            res.send(allCoffees);
+        });
+
+        // POST API
         app.post("/coffee", async (req, res) => {
             const respose = await coffeeCollection.insertOne(req.body);
             res.send(respose);
+        });
+
+        app.delete("/coffee/:id", async (req, res) => {
+            const _id = new ObjectId(req.params.id);
+            const query = { _id };
+            const result = await coffeeCollection.deleteOne(query);
+            res.send(result);
         });
 
         // Send a ping to confirm a successful connection
